@@ -2,13 +2,13 @@ import pandas as pd
 import numpy as np
 
 # region ОПЖ Предобработка данных
-df_life_expectancy = pd.read_excel(r'C:\Users\semen\Desktop\Новая диссертация\Данные\факторы\ОПЖ всех регионов.xlsx', index_col=0, header=0)
+df_life_expectancy = pd.read_excel(r'data\ОПЖ всех регионов.xlsx', index_col=0, header=0)
 
 # удаление агрегированных строк
-exclude_patterns = ['федеральный округ', 'Российская Федерация', 'в том числе: Ханты-Мансийский автономный округ - Югра', 'Ямало-Ненецкий автономный округ']
+exclude_patterns = ['федеральный округ', 'Российская Федерация', 'в том числе: Ханты-Мансийский автономный округ - Югра', 'Ямало-Ненецкий автономный округ', 'в том числе Ненецкий автономный округ']
 mask = ~df_life_expectancy.index.str.contains('|'.join(exclude_patterns), case=False, na=False)
 df_regions = df_life_expectancy[mask].copy()
-print(df_regions.shape)
+
 #Сброс индексов и колонок
 df_regions.reset_index(inplace=True)
 df_regions.rename(columns={'index': 'region'}, inplace=True)
@@ -34,7 +34,7 @@ df_long.loc[(df_long['region'] == 'Ставропольский край') & (df
 # endregion
 
 # region ВРП предобработка данных
-df_vrp = pd.read_excel(r'C:\Users\semen\Desktop\Новая диссертация\Данные\факторы\ВРП за 2000-2023.xlsx', index_col=0, header=0)
+df_vrp = pd.read_excel(r'data\ВРП за 2000-2023.xlsx', index_col=0, header=0)
 # список паттернов для удаления
 
 exclude_patterns = [
@@ -63,9 +63,34 @@ def should_exclude(name):
 
 mask = ~df_vrp.index.to_series().apply(should_exclude)
 df_vrp_filtered = df_vrp[mask].copy()
-print(df_vrp_filtered.shape)
+
+# Принудительно преобразуем все значения в numeric (ошибки станут NaN)
+df_vrp_filtered = df_vrp_filtered.apply(pd.to_numeric, errors='coerce')
+
+# # Выталкиваем index как столбец
+df_vrp_filtered.reset_index(inplace=True)
+
+# Переименуем index как region
+df_vrp_filtered.rename(columns={'index': 'region'}, inplace=True)
+
+# Преобразование формата в длинный
+df_vrp_long = df_vrp_filtered.melt(id_vars=['region'], var_name='year', value_name='vrp')
+
+# Меняем тип year на numeric
+df_vrp_long['year'] = pd.to_numeric(df_vrp_long['year'])
+df_vrp_long['region'] = df_vrp_long['region'].str.strip()
+
+# df_vrp_long.to_csv('vrp_regions_long.csv', index=False)
 
 # endregion
 
+df_opzh = pd.read_csv('opzh_regions_long.csv')
 
-VRP = pd.read_excel(r'C:\Users\semen\Desktop\Новая диссертация\Данные\факторы\ВРП за 2000-2023.xlsx', index_col=0)
+regions_opzh = set(df_opzh['region'].unique())
+regions_vrp = set(df_vrp_long['region'].unique())
+
+df_merged = pd.merge(df_opzh, df_vrp_long, on=['region', 'year'], how='inner')
+df_merged.to_csv('opzh_vrp_table.csv', index=False)
+
+# print(regions_opzh - regions_vrp)
+# print(regions_vrp - regions_opzh)
