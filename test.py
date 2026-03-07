@@ -85,12 +85,27 @@ df_vrp_long['region'] = df_vrp_long['region'].str.strip()
 # endregion
 
 df_opzh = pd.read_csv('opzh_regions_long.csv')
+df_opzh_vrp = pd.read_csv('opzh_vrp_table.csv')
 
 regions_opzh = set(df_opzh['region'].unique())
 regions_vrp = set(df_vrp_long['region'].unique())
 
-df_merged = pd.merge(df_opzh, df_vrp_long, on=['region', 'year'], how='inner')
-df_merged.to_csv('opzh_vrp_table.csv', index=False)
+# df_merged = pd.merge(df_opzh, df_vrp_long, on=['region', 'year'], how='inner')
+# df_merged.to_csv('opzh_vrp_table.csv', index=False)
 
 # print(regions_opzh - regions_vrp)
 # print(regions_vrp - regions_opzh)
+
+# region среднемесячная начисленная зп работников
+df_wage = pd.read_excel(r'data\ср месячная начисленная зп работников.xlsx')
+df_wage.rename(columns={'Unnamed: 0': 'region'}, inplace=True)
+
+df_wage_long = df_wage.melt(id_vars=['region'], var_name='year', value_name='real_wage_index')
+
+df_wage_long['region'] = df_wage_long['region'].str.strip()
+df_wage_long.to_csv('df_wage.csv', index=False)
+
+df_merged = pd.merge(df_opzh_vrp, df_wage_long, on=['region', 'year'], how='inner')
+df_merged.to_csv('df_opzh_vrp_wage', index=False)
+
+# endregion
