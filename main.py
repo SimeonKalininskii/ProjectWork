@@ -112,3 +112,9 @@ def unemployment():
     df_unemployment_long.to_csv('df_unemployment_rate.csv', index=False)
     print(df_unemployment_long['year'].dtype)
 
+df = pd.read_csv('df_unemployment_rate.csv', nrows=76)
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+print(df['region'])
+
