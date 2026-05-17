@@ -142,6 +142,22 @@ def emissions_of_pollutants():
     df_emission_of_pollutants_long['year'] = pd.to_numeric(df_emission_of_pollutants_long['year'])
     df_emission_of_pollutants_long.to_csv('df_emission_of_pollutants_long.csv', index=False)
 
+def number_of_hospital_beds():
+    df_number_of_hospital_beds = pd.read_excel(r'data\Число больничных коек на 10тыс населения.xlsx', header=0)
+    df_number_of_hospital_beds.rename(columns={'Регион':'region'}, inplace=True)
+    df_number_of_hospital_beds = df_number_of_hospital_beds.drop(df_number_of_hospital_beds.columns[[1,2]], axis=1)
+    df_number_of_hospital_beds_long = df_number_of_hospital_beds.melt(id_vars=['region'], var_name='year', value_name='hospital_beds')
+    df_number_of_hospital_beds_long['year'] = pd.to_numeric(df_number_of_hospital_beds_long['year'])
+    df_number_of_hospital_beds_long.to_csv('df_number_of_hospital_beds.csv', index=False)
+
+def number_of_doctors():
+    df_number_of_doctors = pd.read_excel(r'data\числ врачей на 10тыс населения.xlsx', header=0)
+    df_number_of_doctors.rename(columns={'Регион':'region'}, inplace=True)
+    df_number_of_doctors = df_number_of_doctors.drop(df_number_of_doctors.columns[[1,2]], axis=1)
+    df_number_of_doctors_long = df_number_of_doctors.melt(id_vars=['region'], var_name='year', value_name='doctors')
+    df_number_of_doctors_long['year'] = pd.to_numeric(df_number_of_doctors_long['year'])
+    df_number_of_doctors_long.to_csv('df_number_of_doctors.csv', index=False)
+
 life_expectancy()
 VRP()
 wage()
@@ -149,6 +165,8 @@ unemployment()
 living_wage()
 capture_of_air_pollutants()
 emissions_of_pollutants()
+number_of_hospital_beds()
+number_of_doctors()
 #
 df_opzh = pd.read_csv('opzh_regions_long.csv', index_col=0)
 df_vrp = pd.read_csv('vrp_regions_long.csv', index_col=0)
@@ -157,8 +175,10 @@ df_unemployment = pd.read_csv('df_unemployment_rate.csv', index_col=0)
 df_living_wage = pd.read_csv('df_living_wage.csv', index_col=0)
 df_capture_of_air_pollutants = pd.read_csv('df_capture_of_air_pollutants_long.csv', index_col=0)
 df_emission_of_pollutants_long = pd.read_csv('df_emission_of_pollutants_long.csv', index_col=0)
+df_number_of_hospital_beds = pd.read_csv('df_number_of_hospital_beds.csv', index_col=0)
+df_number_of_doctors = pd.read_csv('df_number_of_doctors.csv', index_col=0)
 #
-dataframes = [df_opzh, df_vrp, df_wage, df_unemployment, df_living_wage, df_capture_of_air_pollutants, df_emission_of_pollutants_long]
+dataframes = [df_opzh, df_vrp, df_wage, df_unemployment, df_living_wage, df_capture_of_air_pollutants, df_emission_of_pollutants_long, df_number_of_hospital_beds, df_number_of_doctors]
 df_merged = reduce(lambda left, right: pd.merge(left, right, on=['region', 'year'], how='inner'), dataframes)
 df_merged.to_csv('dataframes.csv')
 df_merged.to_excel('dataframe_excel.xlsx')
